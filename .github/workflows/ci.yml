@@ -1,4 +1,4 @@
-name: EdTech CI Pipeline
+name: EdTech CI/CD Pipeline
 
 on:
   push:
@@ -7,7 +7,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test:
+  ci:
+    name: Continuous Integration
     runs-on: ubuntu-latest
 
     steps:
@@ -25,5 +26,25 @@ jobs:
           pip install pytest
 
       - name: Run tests
+        run: pytest
+
+  cd:
+    name: Continuous Deployment
+    runs-on: ubuntu-latest
+    needs: ci   # 🚨 CD runs ONLY if CI passes
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create build package
         run: |
-          pytest
+          mkdir build
+          cp -r app build/
+          cp README.md build/
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: edtech-admission-build
+          path: build/
